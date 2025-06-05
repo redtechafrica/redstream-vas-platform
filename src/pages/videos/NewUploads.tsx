@@ -1,116 +1,168 @@
 
 import { useState } from "react"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Upload } from "lucide-react"
+import { Upload, FileVideo, Image } from "lucide-react"
+import { UserNav } from "@/components/user-nav"
 import { useToast } from "@/hooks/use-toast"
+import { useNavigate } from "react-router-dom"
 
 export default function NewUploads() {
-  const [files, setFiles] = useState<File[]>([])
   const { toast } = useToast()
+  const navigate = useNavigate()
+  const [uploadData, setUploadData] = useState({
+    title: "",
+    type: "",
+    category: "",
+    files: [] as File[]
+  })
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files)
-      if (newFiles.length > 5) {
-        toast({
-          title: "Too many files",
-          description: "Maximum 5 files allowed",
-          variant: "destructive"
-        })
-        return
-      }
-      
-      const oversizedFiles = newFiles.filter(file => file.size > 1.5 * 1024 * 1024 * 1024) // 1.5GB
-      if (oversizedFiles.length > 0) {
-        toast({
-          title: "File too large",
-          description: "Maximum file size is 1.5GB",
-          variant: "destructive"
-        })
-        return
-      }
-      
-      setFiles(newFiles)
+  const handleInputChange = (field: string, value: string) => {
+    setUploadData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || [])
+    if (files.length > 0) {
+      setUploadData(prev => ({ ...prev, files }))
+      toast({
+        title: "Files selected",
+        description: `${files.length} file(s) selected for upload`,
+      })
     }
   }
 
-  const handleSubmit = async () => {
-    if (files.length === 0) {
+  const handleUpload = () => {
+    if (!uploadData.title || !uploadData.type || uploadData.files.length === 0) {
       toast({
-        title: "No files selected",
-        description: "Please select files to upload",
+        title: "Error",
+        description: "Please fill in all required fields and select files",
         variant: "destructive"
       })
       return
     }
 
-    console.log("Uploading files:", files)
-    // API endpoint: POST /api/uploads
-    
+    // API call would go here
     toast({
-      title: "Upload started",
-      description: `Uploading ${files.length} file(s)...`
+      title: "Success",
+      description: "Files uploaded successfully",
     })
+    navigate("/videos/uploads")
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">New Uploads</h1>
-        <p className="text-muted-foreground">Home {" > "} Dashboard {" > "} Manage Videos {" > "} New Upload(s)</p>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Upload Files</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="border-2 border-dashed border-blue-300 bg-blue-50/30 rounded-lg p-8">
-            <div className="text-center">
-              <label className="cursor-pointer">
-                <div className="flex flex-col items-center justify-center space-y-4">
-                  <Upload className="h-12 w-12 text-blue-500" />
-                  <div>
-                    <Button type="button" className="bg-blue-500 hover:bg-blue-600">
-                      Attach files
-                    </Button>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Max file size is 1.5GB and max number of files is 5.
-                  </p>
-                </div>
-                <input
-                  type="file"
-                  multiple
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  accept="video/*"
+    <div className="flex-1">
+      <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+        <SidebarTrigger className="-ml-1" />
+        <div className="flex-1">
+          <h1 className="text-lg font-semibold">New Upload</h1>
+          <p className="text-sm text-muted-foreground">Home → Dashboard → Manage Videos → Uploads → New</p>
+        </div>
+        <UserNav />
+      </header>
+      
+      <div className="flex-1 space-y-4 p-8 pt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Upload New Files</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Title <span className="text-red-500">*</span></Label>
+                <Input 
+                  id="title" 
+                  placeholder="Enter upload title" 
+                  value={uploadData.title}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
                 />
-              </label>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="type">Content Type <span className="text-red-500">*</span></Label>
+                <Select value={uploadData.type} onValueChange={(value) => handleInputChange("type", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select content type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="video">Video</SelectItem>
+                    <SelectItem value="series">Series</SelectItem>
+                    <SelectItem value="documentary">Documentary</SelectItem>
+                    <SelectItem value="short">Short</SelectItem>
+                    <SelectItem value="image">Image</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
 
-          {files.length > 0 && (
-            <div className="mt-4 space-y-2">
-              <h3 className="font-medium">Selected Files:</h3>
-              {files.map((file, index) => (
-                <div key={index} className="text-sm text-muted-foreground">
-                  {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select value={uploadData.category} onValueChange={(value) => handleInputChange("category", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="music">Music Videos</SelectItem>
+                  <SelectItem value="sports">Sports</SelectItem>
+                  <SelectItem value="entertainment">Entertainment</SelectItem>
+                  <SelectItem value="news">News</SelectItem>
+                  <SelectItem value="education">Education</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="files">Files <span className="text-red-500">*</span></Label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex gap-2">
+                    <FileVideo className="h-8 w-8 text-gray-400" />
+                    <Image className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Upload your files</p>
+                    <p className="text-xs text-muted-foreground">
+                      Drag and drop files here, or click to browse
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" className="gap-2" asChild>
+                    <label htmlFor="file-upload" className="cursor-pointer">
+                      <Upload className="h-4 w-4" />
+                      Choose Files
+                      <input
+                        id="file-upload"
+                        type="file"
+                        multiple
+                        accept="video/*,image/*"
+                        className="hidden"
+                        onChange={handleFileUpload}
+                      />
+                    </label>
+                  </Button>
                 </div>
-              ))}
+              </div>
+              {uploadData.files.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-sm font-medium">Selected files:</p>
+                  <ul className="text-sm text-muted-foreground">
+                    {uploadData.files.map((file, index) => (
+                      <li key={index}>{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
-          )}
 
-          {files.length > 0 && (
-            <div className="mt-6 flex justify-end">
-              <Button onClick={handleSubmit} className="bg-blue-500 hover:bg-blue-600">
-                Upload Files
-              </Button>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => navigate("/videos/uploads")}>Cancel</Button>
+              <Button onClick={handleUpload}>Upload Files</Button>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

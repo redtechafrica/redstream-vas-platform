@@ -1,21 +1,14 @@
 
 import { useState } from "react"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
-import { Search, Plus, Edit, Trash2 } from "lucide-react"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { Search, Plus } from "lucide-react"
+import { UserNav } from "@/components/user-nav"
+import { RenameModal } from "@/components/RenameModal"
+import { useNavigate } from "react-router-dom"
 
 const sampleUploads = [
   {
@@ -39,145 +32,141 @@ const sampleUploads = [
 ]
 
 export default function ManageUploads() {
+  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState("")
   const [uploads, setUploads] = useState(sampleUploads)
-  const [renameId, setRenameId] = useState<number | null>(null)
-  const [newName, setNewName] = useState("")
+  const [filteredUploads, setFilteredUploads] = useState(sampleUploads)
+  const [renameModal, setRenameModal] = useState<{isOpen: boolean, upload: any}>({
+    isOpen: false,
+    upload: null
+  })
 
   const handleSearch = (value: string) => {
     setSearchTerm(value)
-    // API endpoint: GET /api/uploads?search=${value}
+    const filtered = uploads.filter(upload => 
+      upload.title.toLowerCase().includes(value.toLowerCase()) ||
+      upload.filename.toLowerCase().includes(value.toLowerCase())
+    )
+    setFilteredUploads(filtered)
   }
 
-  const handleRename = (id: number, currentTitle: string) => {
-    setRenameId(id)
-    setNewName(currentTitle)
+  const handleRename = (upload: any) => {
+    setRenameModal({ isOpen: true, upload })
   }
 
-  const confirmRename = () => {
-    if (renameId) {
-      setUploads(uploads.map(upload => 
-        upload.id === renameId 
+  const confirmRename = (newName: string) => {
+    if (renameModal.upload) {
+      const newUploads = uploads.map(upload => 
+        upload.id === renameModal.upload.id 
           ? { ...upload, title: newName }
           : upload
+      )
+      setUploads(newUploads)
+      setFilteredUploads(newUploads.filter(upload => 
+        upload.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        upload.filename.toLowerCase().includes(searchTerm.toLowerCase())
       ))
-      // API endpoint: PUT /api/uploads/${renameId}/rename
-      setRenameId(null)
-      setNewName("")
+      setRenameModal({ isOpen: false, upload: null })
     }
   }
 
-  const handleDelete = (id: number) => {
-    setUploads(uploads.filter(upload => upload.id !== id))
-    // API endpoint: DELETE /api/uploads/${id}
-  }
-
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Manage Uploads</h1>
-        <p className="text-muted-foreground">Home {" > "} Dashboard {" > "} Manage Videos {" > "} Uploads</p>
-      </div>
+    <div className="flex-1">
+      <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+        <SidebarTrigger className="-ml-1" />
+        <div className="flex-1">
+          <h1 className="text-lg font-semibold">Manage Uploads</h1>
+          <p className="text-sm text-muted-foreground">Home → Dashboard → Manage Videos → Uploads</p>
+        </div>
+        <UserNav />
+      </header>
 
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>File Uploads</CardTitle>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              New Upload
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search uploads..."
-                value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="pl-10"
-              />
+      <div className="flex-1 space-y-4 p-8 pt-6">
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <CardTitle>File Uploads</CardTitle>
+              <Button onClick={() => navigate("/videos/uploads/new")}>
+                <Plus className="h-4 w-4 mr-2" />
+                New Upload
+              </Button>
             </div>
-          </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4 mb-6">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Search uploads..."
+                  value={searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>TITLE</TableHead>
-                <TableHead>FILE TYPE</TableHead>
-                <TableHead>LINKED POST(S)</TableHead>
-                <TableHead>UPLOADED</TableHead>
-                <TableHead>ACTION</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {uploads.length === 0 ? (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                    No uploads available
-                  </TableCell>
+                  <TableHead>ID</TableHead>
+                  <TableHead>TITLE</TableHead>
+                  <TableHead>FILE TYPE</TableHead>
+                  <TableHead>LINKED POST(S)</TableHead>
+                  <TableHead>UPLOADED</TableHead>
+                  <TableHead>ACTION</TableHead>
                 </TableRow>
-              ) : (
-                uploads.map((upload) => (
-                  <TableRow key={upload.id}>
-                    <TableCell>{upload.id}</TableCell>
-                    <TableCell className="font-medium">{upload.title}</TableCell>
-                    <TableCell>{upload.fileType}</TableCell>
-                    <TableCell>{upload.linkedPosts}</TableCell>
-                    <TableCell>{upload.uploadedAt}</TableCell>
-                    <TableCell>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button 
-                            size="sm" 
-                            className="bg-blue-500 hover:bg-blue-600 mr-2"
-                            onClick={() => handleRename(upload.id, upload.title)}
-                          >
-                            Rename
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Rename Upload</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Enter a new name for this upload.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <div className="py-4">
-                            <Input
-                              value={newName}
-                              onChange={(e) => setNewName(e.target.value)}
-                              placeholder="Enter new name..."
-                            />
-                          </div>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel onClick={() => setRenameId(null)}>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={confirmRename}>Rename</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+              </TableHeader>
+              <TableBody>
+                {filteredUploads.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                      No uploads available
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  filteredUploads.map((upload) => (
+                    <TableRow key={upload.id}>
+                      <TableCell>{upload.id}</TableCell>
+                      <TableCell className="font-medium">{upload.title}</TableCell>
+                      <TableCell>{upload.fileType}</TableCell>
+                      <TableCell>{upload.linkedPosts}</TableCell>
+                      <TableCell>{upload.uploadedAt}</TableCell>
+                      <TableCell>
+                        <Button 
+                          size="sm" 
+                          className="bg-blue-500 hover:bg-blue-600"
+                          onClick={() => handleRename(upload)}
+                        >
+                          Rename
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
 
-          <div className="flex items-center justify-between mt-4">
-            <p className="text-sm text-muted-foreground">
-              Showing 1 to {uploads.length} of {uploads.length} records
-            </p>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">Previous</Button>
-              <Button variant="outline" size="sm">1</Button>
-              <Button variant="outline" size="sm">Next</Button>
+            <div className="flex items-center justify-between mt-4">
+              <p className="text-sm text-muted-foreground">
+                Showing 1 to {filteredUploads.length} of {uploads.length} records
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">Previous</Button>
+                <Button variant="outline" size="sm">1</Button>
+                <Button variant="outline" size="sm">Next</Button>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
+
+      <RenameModal
+        isOpen={renameModal.isOpen}
+        onClose={() => setRenameModal({ isOpen: false, upload: null })}
+        currentName={renameModal.upload?.title || ""}
+        onRename={confirmRename}
+        type="Upload"
+      />
     </div>
   )
 }

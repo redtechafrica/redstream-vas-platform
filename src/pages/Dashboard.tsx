@@ -2,6 +2,7 @@
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, FileText, Activity, DollarSign, Calendar } from "lucide-react"
+import { UserNav } from "@/components/user-nav"
 
 const Dashboard = () => {
   const stats = [
@@ -81,13 +82,7 @@ const Dashboard = () => {
           <h1 className="text-lg font-semibold">Application Dashboard</h1>
           <p className="text-sm text-muted-foreground">Home → Dashboard</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">About</span>
-          <span className="text-sm text-muted-foreground">Support</span>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white text-sm font-medium">
-            N
-          </div>
-        </div>
+        <UserNav />
       </header>
       
       <div className="flex-1 space-y-4 p-8 pt-6">

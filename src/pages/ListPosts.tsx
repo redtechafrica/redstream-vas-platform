@@ -1,11 +1,27 @@
 
+import { useState } from "react"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Search, Filter } from "lucide-react"
+import { UserNav } from "@/components/user-nav"
 
 const ListPosts = () => {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filteredData, setFilteredData] = useState([
+    { subscriber: "2348065077536", operator: "MTN2", type: "Grace", amount: 0, timestamp: "2025-06-05" },
+    { subscriber: "2348134844247", operator: "MTN2", type: "Modification", amount: 100, timestamp: "2025-06-05" },
+    { subscriber: "2348169784319", operator: "MTN2", type: "Modification", amount: 50, timestamp: "2025-06-05" },
+    { subscriber: "2349039364888", operator: "MTN2", type: "Modification", amount: 100, timestamp: "2025-06-05" },
+    { subscriber: "2348138313567", operator: "MTN2", type: "Modification", amount: 100, timestamp: "2025-06-05" },
+    { subscriber: "2347062903956", operator: "MTN2", type: "Modification", amount: 100, timestamp: "2025-06-05" },
+    { subscriber: "2348160063234", operator: "MTN2", type: "Grace", amount: 0, timestamp: "2025-06-05" },
+    { subscriber: "2348144647974", operator: "MTN2", type: "Modification", amount: 5, timestamp: "2025-06-05" },
+    { subscriber: "2348062684222", operator: "MTN2", type: "Modification", amount: 100, timestamp: "2025-06-05" },
+    { subscriber: "2348132792090", operator: "MTN2", type: "Modification", amount: 100, timestamp: "2025-06-05" },
+  ])
+
   const postsData = [
     { subscriber: "2348065077536", operator: "MTN2", type: "Grace", amount: 0, timestamp: "2025-06-05" },
     { subscriber: "2348134844247", operator: "MTN2", type: "Modification", amount: 100, timestamp: "2025-06-05" },
@@ -19,6 +35,16 @@ const ListPosts = () => {
     { subscriber: "2348132792090", operator: "MTN2", type: "Modification", amount: 100, timestamp: "2025-06-05" },
   ]
 
+  const handleSearch = (value: string) => {
+    setSearchTerm(value)
+    const filtered = postsData.filter(post => 
+      post.subscriber.toLowerCase().includes(value.toLowerCase()) ||
+      post.operator.toLowerCase().includes(value.toLowerCase()) ||
+      post.type.toLowerCase().includes(value.toLowerCase())
+    )
+    setFilteredData(filtered)
+  }
+
   return (
     <div className="flex-1">
       <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
@@ -27,20 +53,19 @@ const ListPosts = () => {
           <h1 className="text-lg font-semibold">List Posts</h1>
           <p className="text-sm text-muted-foreground">Home → Dashboard → Manage Subscription</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">About</span>
-          <span className="text-sm text-muted-foreground">Support</span>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white text-sm font-medium">
-            N
-          </div>
-        </div>
+        <UserNav />
       </header>
       
       <div className="flex-1 space-y-4 p-8 pt-6">
         <div className="flex items-center gap-4">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search user" className="pl-8" />
+            <Input 
+              placeholder="Search user" 
+              className="pl-8" 
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+            />
           </div>
           <Button variant="outline" className="gap-2">
             <Filter className="h-4 w-4" />
@@ -60,7 +85,7 @@ const ListPosts = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {postsData.map((row, index) => (
+              {filteredData.map((row, index) => (
                 <TableRow key={index}>
                   <TableCell className="font-medium">{row.subscriber}</TableCell>
                   <TableCell>{row.operator}</TableCell>
@@ -76,7 +101,7 @@ const ListPosts = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">10</span>
-            <span className="text-sm text-muted-foreground">Showing 1 to 10 of 396,405 records</span>
+            <span className="text-sm text-muted-foreground">Showing 1 to {filteredData.length} of {postsData.length} records</span>
           </div>
           <div className="flex items-center gap-1">
             <Button variant="outline" size="sm">‹</Button>

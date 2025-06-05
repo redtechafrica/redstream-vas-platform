@@ -1,11 +1,27 @@
 
+import { useState } from "react"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Search, ChevronDown } from "lucide-react"
+import { UserNav } from "@/components/user-nav"
 
 const ManageServices = () => {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filteredData, setFilteredData] = useState([
+    { 
+      id: 1, 
+      name: "Redstream Daily", 
+      mno: "MTN", 
+      amount: 100, 
+      duration: 1, 
+      serviceId: 1175, 
+      productId: 1175, 
+      created: "2025-02-05" 
+    }
+  ])
+
   const servicesData = [
     { 
       id: 1, 
@@ -19,6 +35,15 @@ const ManageServices = () => {
     }
   ]
 
+  const handleSearch = (value: string) => {
+    setSearchTerm(value)
+    const filtered = servicesData.filter(service => 
+      service.name.toLowerCase().includes(value.toLowerCase()) ||
+      service.mno.toLowerCase().includes(value.toLowerCase())
+    )
+    setFilteredData(filtered)
+  }
+
   return (
     <div className="flex-1">
       <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
@@ -27,20 +52,19 @@ const ManageServices = () => {
           <h1 className="text-lg font-semibold">Manage Services.</h1>
           <p className="text-sm text-muted-foreground">Home → Dashboard → Manage Services</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">About</span>
-          <span className="text-sm text-muted-foreground">Support</span>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white text-sm font-medium">
-            N
-          </div>
-        </div>
+        <UserNav />
       </header>
       
       <div className="flex-1 space-y-4 p-8 pt-6">
         <div className="flex items-center gap-4">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search user" className="pl-8" />
+            <Input 
+              placeholder="Search user" 
+              className="pl-8" 
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+            />
           </div>
         </div>
 
@@ -61,7 +85,7 @@ const ManageServices = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {servicesData.map((row) => (
+              {filteredData.map((row) => (
                 <TableRow key={row.id}>
                   <TableCell className="font-medium text-blue-600">{row.name}</TableCell>
                   <TableCell>{row.mno}</TableCell>
@@ -79,7 +103,7 @@ const ManageServices = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">10</span>
-            <span className="text-sm text-muted-foreground">Showing 1 to 1 of 1 records</span>
+            <span className="text-sm text-muted-foreground">Showing 1 to {filteredData.length} of {servicesData.length} records</span>
           </div>
           <div className="flex items-center gap-1">
             <Button variant="default" size="sm">1</Button>

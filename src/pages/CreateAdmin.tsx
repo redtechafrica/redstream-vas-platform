@@ -1,4 +1,5 @@
 
+import { useState } from "react"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,8 +9,53 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Upload, User } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { UserNav } from "@/components/user-nav"
 
 const CreateAdmin = () => {
+  const { toast } = useToast()
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    role: "",
+    phone: "",
+    avatar: null as File | null
+  })
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      setFormData(prev => ({ ...prev, avatar: file }))
+      toast({
+        title: "File uploaded",
+        description: `${file.name} has been selected`,
+      })
+    }
+  }
+
+  const handleSave = () => {
+    if (!formData.firstName || !formData.email || !formData.password || !formData.role) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      })
+      return
+    }
+
+    // API call would go here
+    toast({
+      title: "Success",
+      description: "Admin created successfully",
+    })
+  }
+
   return (
     <div className="flex-1">
       <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
@@ -18,13 +64,7 @@ const CreateAdmin = () => {
           <h1 className="text-lg font-semibold">Create New Admin.</h1>
           <p className="text-sm text-muted-foreground">Home → Dashboard → Manage Admins → Add New</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">About</span>
-          <span className="text-sm text-muted-foreground">Support</span>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white text-sm font-medium">
-            N
-          </div>
-        </div>
+        <UserNav />
       </header>
       
       <div className="flex-1 p-8 pt-6">
@@ -43,9 +83,18 @@ const CreateAdmin = () => {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col gap-2">
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Upload className="h-4 w-4" />
-                      Upload Image
+                    <Button variant="outline" size="sm" className="gap-2" asChild>
+                      <label htmlFor="file-upload" className="cursor-pointer">
+                        <Upload className="h-4 w-4" />
+                        Upload Image
+                        <input
+                          id="file-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleFileUpload}
+                        />
+                      </label>
                     </Button>
                     <p className="text-xs text-muted-foreground">
                       Allowed file types: png, jpg, jpeg
@@ -57,29 +106,51 @@ const CreateAdmin = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Full Name <span className="text-red-500">*</span></Label>
-                  <Input id="firstName" placeholder="First name" />
+                  <Input 
+                    id="firstName" 
+                    placeholder="First name" 
+                    value={formData.firstName}
+                    onChange={(e) => handleInputChange("firstName", e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">&nbsp;</Label>
-                  <Input id="lastName" placeholder="Last name" />
+                  <Input 
+                    id="lastName" 
+                    placeholder="Last name" 
+                    value={formData.lastName}
+                    onChange={(e) => handleInputChange("lastName", e.target.value)}
+                  />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Logon Details <span className="text-red-500">*</span></Label>
-                  <Input id="email" type="email" placeholder="email" />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="email" 
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">&nbsp;</Label>
-                  <Input id="password" type="password" placeholder="password" />
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    placeholder="password" 
+                    value={formData.password}
+                    onChange={(e) => handleInputChange("password", e.target.value)}
+                  />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="role">Other Details <span className="text-red-500">*</span></Label>
-                  <Select>
+                  <Select value={formData.role} onValueChange={(value) => handleInputChange("role", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="-- choose one --" />
                     </SelectTrigger>
@@ -91,7 +162,12 @@ const CreateAdmin = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">&nbsp;</Label>
-                  <Input id="phone" placeholder="Phone No." />
+                  <Input 
+                    id="phone" 
+                    placeholder="Phone No." 
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange("phone", e.target.value)}
+                  />
                 </div>
               </div>
 
@@ -135,7 +211,7 @@ const CreateAdmin = () => {
 
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline">Discard</Button>
-                <Button>Save Changes</Button>
+                <Button onClick={handleSave}>Save Changes</Button>
               </div>
             </CardContent>
           </Card>
