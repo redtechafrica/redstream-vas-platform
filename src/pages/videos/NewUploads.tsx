@@ -3,26 +3,62 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Upload } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 export default function NewUploads() {
   const [files, setFiles] = useState<File[]>([])
+  const { toast } = useToast()
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setFiles(Array.from(e.target.files))
+      const newFiles = Array.from(e.target.files)
+      if (newFiles.length > 5) {
+        toast({
+          title: "Too many files",
+          description: "Maximum 5 files allowed",
+          variant: "destructive"
+        })
+        return
+      }
+      
+      const oversizedFiles = newFiles.filter(file => file.size > 1.5 * 1024 * 1024 * 1024) // 1.5GB
+      if (oversizedFiles.length > 0) {
+        toast({
+          title: "File too large",
+          description: "Maximum file size is 1.5GB",
+          variant: "destructive"
+        })
+        return
+      }
+      
+      setFiles(newFiles)
     }
   }
 
   const handleSubmit = async () => {
+    if (files.length === 0) {
+      toast({
+        title: "No files selected",
+        description: "Please select files to upload",
+        variant: "destructive"
+      })
+      return
+    }
+
     console.log("Uploading files:", files)
     // API endpoint: POST /api/uploads
+    
+    toast({
+      title: "Upload started",
+      description: `Uploading ${files.length} file(s)...`
+    })
   }
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">New Uploads</h1>
-        <p className="text-muted-foreground">Home > Dashboard > Manage Uploads > New Upload(s)</p>
+        <p className="text-muted-foreground">Home {" > "} Dashboard {" > "} Manage Videos {" > "} New Upload(s)</p>
       </div>
 
       <Card>

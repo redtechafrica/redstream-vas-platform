@@ -1,160 +1,183 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
-import { Search } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Search, Plus, Edit, Trash2 } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
-const uploadsData = [
+const sampleUploads = [
   {
     id: 1,
-    title: "Official Naija FPL Gameweek 0 2023_2024",
+    title: "Official Naija FPL Gameweek 6 2023_2024",
+    filename: "naija_fpl_gw6.mp4",
     fileType: "mp4",
+    fileSize: 250.5,
     linkedPosts: 0,
-    uploaded: "Sep 09 2024, 09:39:18 PM"
+    uploadedAt: "Sep 09 2024, 09:39:18 PM"
   },
   {
     id: 2,
-    title: "Official Naija FPL Gameweek 6 2023_2024",
+    title: "Official Naija FPL Gameweek 5 2023_2024", 
+    filename: "naija_fpl_gw5.mp4",
     fileType: "mp4",
+    fileSize: 180.2,
     linkedPosts: 1,
-    uploaded: "Sep 09 2024, 01:01:04 PM"
-  },
-  {
-    id: 3,
-    title: "Official Naija FPL Gameweek 5 2023_2024",
-    fileType: "mp4",
-    linkedPosts: 1,
-    uploaded: "Sep 09 2024, 12:52:22 PM"
-  },
-  {
-    id: 4,
-    title: "Official Naija FPL Gameweek 2 2023_2024",
-    fileType: "mp4",
-    linkedPosts: 1,
-    uploaded: "Sep 09 2024, 12:52:17 PM"
-  },
-  {
-    id: 5,
-    title: "Official Naija FPL Gameweek 4 2023_2024",
-    fileType: "mp4",
-    linkedPosts: 1,
-    uploaded: "Sep 09 2024, 12:52:01 PM"
-  },
-  {
-    id: 6,
-    title: "Official Naija FPL Gameweek 3 2023_2024",
-    fileType: "mp4",
-    linkedPosts: 1,
-    uploaded: "Sep 09 2024, 12:50:25 PM"
-  },
-  {
-    id: 7,
-    title: "Official Naija FPL Gameweek 1 2023_2024",
-    fileType: "mp4",
-    linkedPosts: 1,
-    uploaded: "Sep 09 2024, 12:50:10 PM"
-  },
-  {
-    id: 8,
-    title: "Stunning Sunset Seen From The Sea _ Time lapse _ 10 Seconds Video _ Nature Blogs",
-    fileType: "mp4",
-    linkedPosts: 8,
-    uploaded: "Jun 12 2024, 06:35:37 PM"
-  },
-  {
-    id: 9,
-    title: "TENI - WONDABOX - My XXXL Episode 13",
-    fileType: "mp4",
-    linkedPosts: 4,
-    uploaded: "Mar 31 2024, 11:58:52 AM"
+    uploadedAt: "Sep 09 2024, 01:01:04 PM"
   }
 ]
 
 export default function ManageUploads() {
   const [searchTerm, setSearchTerm] = useState("")
+  const [uploads, setUploads] = useState(sampleUploads)
+  const [renameId, setRenameId] = useState<number | null>(null)
+  const [newName, setNewName] = useState("")
 
-  const filteredUploads = uploadsData.filter(upload =>
-    upload.title.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const handleSearch = (value: string) => {
+    setSearchTerm(value)
+    // API endpoint: GET /api/uploads?search=${value}
+  }
+
+  const handleRename = (id: number, currentTitle: string) => {
+    setRenameId(id)
+    setNewName(currentTitle)
+  }
+
+  const confirmRename = () => {
+    if (renameId) {
+      setUploads(uploads.map(upload => 
+        upload.id === renameId 
+          ? { ...upload, title: newName }
+          : upload
+      ))
+      // API endpoint: PUT /api/uploads/${renameId}/rename
+      setRenameId(null)
+      setNewName("")
+    }
+  }
+
+  const handleDelete = (id: number) => {
+    setUploads(uploads.filter(upload => upload.id !== id))
+    // API endpoint: DELETE /api/uploads/${id}
+  }
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Manage Uploads</h1>
-        <p className="text-muted-foreground">Home > Dashboard > Manage Uploads</p>
+        <p className="text-muted-foreground">Home {" > "} Dashboard {" > "} Manage Videos {" > "} Uploads</p>
       </div>
 
-      <div className="mb-6">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Search user"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>File Uploads</CardTitle>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              New Upload
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search uploads..."
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-12">#</TableHead>
-              <TableHead>TITLE</TableHead>
-              <TableHead>FILE TYPE</TableHead>
-              <TableHead>LINKED POST(S)</TableHead>
-              <TableHead>UPLOADED</TableHead>
-              <TableHead>ACTION</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredUploads.map((upload) => (
-              <TableRow key={upload.id}>
-                <TableCell>{upload.id}</TableCell>
-                <TableCell>
-                  <a href="#" className="text-blue-500 hover:underline">
-                    {upload.title}
-                  </a>
-                </TableCell>
-                <TableCell>{upload.fileType}</TableCell>
-                <TableCell>{upload.linkedPosts}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {upload.uploaded}
-                </TableCell>
-                <TableCell>
-                  <Button size="sm">Rename</Button>
-                </TableCell>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>TITLE</TableHead>
+                <TableHead>FILE TYPE</TableHead>
+                <TableHead>LINKED POST(S)</TableHead>
+                <TableHead>UPLOADED</TableHead>
+                <TableHead>ACTION</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {uploads.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                    No uploads available
+                  </TableCell>
+                </TableRow>
+              ) : (
+                uploads.map((upload) => (
+                  <TableRow key={upload.id}>
+                    <TableCell>{upload.id}</TableCell>
+                    <TableCell className="font-medium">{upload.title}</TableCell>
+                    <TableCell>{upload.fileType}</TableCell>
+                    <TableCell>{upload.linkedPosts}</TableCell>
+                    <TableCell>{upload.uploadedAt}</TableCell>
+                    <TableCell>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            size="sm" 
+                            className="bg-blue-500 hover:bg-blue-600 mr-2"
+                            onClick={() => handleRename(upload.id, upload.title)}
+                          >
+                            Rename
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Rename Upload</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Enter a new name for this upload.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <div className="py-4">
+                            <Input
+                              value={newName}
+                              onChange={(e) => setNewName(e.target.value)}
+                              placeholder="Enter new name..."
+                            />
+                          </div>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel onClick={() => setRenameId(null)}>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={confirmRename}>Rename</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
 
-      <div className="mt-6 flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
-          Showing 1 to 9 of 9 records
-        </div>
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious href="#" />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#" isActive>1</PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext href="#" />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
-
-      <div className="mt-8 text-xs text-muted-foreground">
-        2022©
-      </div>
+          <div className="flex items-center justify-between mt-4">
+            <p className="text-sm text-muted-foreground">
+              Showing 1 to {uploads.length} of {uploads.length} records
+            </p>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm">Previous</Button>
+              <Button variant="outline" size="sm">1</Button>
+              <Button variant="outline" size="sm">Next</Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
