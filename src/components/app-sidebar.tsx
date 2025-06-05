@@ -1,5 +1,5 @@
 
-import { Home, Users, FileText, Activity, Settings, Plus, List, Calendar, ChevronDown } from "lucide-react"
+import { Home, Users, FileText, Activity, Settings, Plus, List, Calendar, ChevronDown, Upload, Video, FolderOpen, User } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import {
   Sidebar,
@@ -53,29 +53,69 @@ const menuItems = [
   },
   {
     title: "Manage Videos",
-    icon: FileText,
+    icon: Video,
     items: [
       {
-        title: "VAS Module",
-        icon: Activity,
-        items: [
-          {
-            title: "Services",
-            url: "/manage-services",
-          },
-          {
-            title: "Subscriptions",
-            url: "/subscriptions",
-          },
-          {
-            title: "Transaction",
-            url: "/list-posts",
-          },
-          {
-            title: "Daily Report",
-            url: "/daily-report",
-          },
-        ],
+        title: "New Video",
+        url: "/videos/new",
+        icon: Plus,
+      },
+      {
+        title: "Videos",
+        url: "/videos",
+        icon: Video,
+      },
+      {
+        title: "New Category",
+        url: "/videos/categories/new",
+        icon: Plus,
+      },
+      {
+        title: "Video Categories",
+        url: "/videos/categories",
+        icon: FolderOpen,
+      },
+      {
+        title: "New Artist",
+        url: "/videos/artists/new",
+        icon: Plus,
+      },
+      {
+        title: "Artists",
+        url: "/videos/artists",
+        icon: User,
+      },
+      {
+        title: "New Uploads",
+        url: "/videos/uploads/new",
+        icon: Plus,
+      },
+      {
+        title: "Manage Uploads",
+        url: "/videos/uploads",
+        icon: Upload,
+      },
+    ],
+  },
+  {
+    title: "VAS Module",
+    icon: Activity,
+    items: [
+      {
+        title: "Services",
+        url: "/manage-services",
+      },
+      {
+        title: "Subscriptions",
+        url: "/subscriptions",
+      },
+      {
+        title: "Transaction",
+        url: "/list-posts",
+      },
+      {
+        title: "Daily Report",
+        url: "/daily-report",
       },
     ],
   },
@@ -101,12 +141,12 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r">
-      <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2">
+      <SidebarHeader className="p-6">
+        <div className="flex items-center gap-3">
           <img 
             src={logoUrl} 
             alt="REDSTREAM" 
-            className="h-8 w-auto"
+            className="h-12 w-auto"
           />
         </div>
       </SidebarHeader>
@@ -119,7 +159,7 @@ export function AppSidebar() {
                 if (item.items) {
                   return (
                     <SidebarMenuItem key={item.title}>
-                      <Collapsible defaultOpen={item.title === "VAS Module"}>
+                      <Collapsible defaultOpen={item.title === "Manage Videos"}>
                         <CollapsibleTrigger asChild>
                           <SidebarMenuButton className="w-full justify-between">
                             <div className="flex items-center gap-2">
@@ -131,54 +171,19 @@ export function AppSidebar() {
                         </CollapsibleTrigger>
                         <CollapsibleContent>
                           <SidebarMenuSub>
-                            {item.items.map((subItem) => {
-                              if (subItem.items) {
-                                return (
-                                  <SidebarMenuItem key={subItem.title}>
-                                    <Collapsible defaultOpen>
-                                      <CollapsibleTrigger asChild>
-                                        <SidebarMenuSubButton className="w-full justify-between">
-                                          <div className="flex items-center gap-2">
-                                            <subItem.icon className="h-4 w-4" />
-                                            <span>{subItem.title}</span>
-                                          </div>
-                                          <ChevronDown className="h-4 w-4" />
-                                        </SidebarMenuSubButton>
-                                      </CollapsibleTrigger>
-                                      <CollapsibleContent>
-                                        <SidebarMenuSub>
-                                          {subItem.items.map((nestedItem) => (
-                                            <SidebarMenuSubItem key={nestedItem.title}>
-                                              <SidebarMenuSubButton 
-                                                asChild
-                                                isActive={location.pathname === nestedItem.url}
-                                              >
-                                                <Link to={nestedItem.url}>
-                                                  <span>{nestedItem.title}</span>
-                                                </Link>
-                                              </SidebarMenuSubButton>
-                                            </SidebarMenuSubItem>
-                                          ))}
-                                        </SidebarMenuSub>
-                                      </CollapsibleContent>
-                                    </Collapsible>
-                                  </SidebarMenuItem>
-                                )
-                              }
-                              return (
-                                <SidebarMenuSubItem key={subItem.title}>
-                                  <SidebarMenuSubButton 
-                                    asChild
-                                    isActive={location.pathname === subItem.url}
-                                  >
-                                    <Link to={subItem.url}>
-                                      <subItem.icon className="h-4 w-4" />
-                                      <span>{subItem.title}</span>
-                                    </Link>
-                                  </SidebarMenuSubButton>
-                                </SidebarMenuSubItem>
-                              )
-                            })}
+                            {item.items.map((subItem) => (
+                              <SidebarMenuSubItem key={subItem.title}>
+                                <SidebarMenuSubButton 
+                                  asChild
+                                  isActive={location.pathname === subItem.url}
+                                >
+                                  <Link to={subItem.url}>
+                                    {subItem.icon && <subItem.icon className="h-4 w-4" />}
+                                    <span>{subItem.title}</span>
+                                  </Link>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            ))}
                           </SidebarMenuSub>
                         </CollapsibleContent>
                       </Collapsible>
