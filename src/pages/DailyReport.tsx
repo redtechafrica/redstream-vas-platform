@@ -1,9 +1,9 @@
-
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Search, Filter } from "lucide-react"
+import { UserNav } from "@/components/user-nav"
 
 const DailyReport = () => {
   const reportData = [
@@ -27,13 +27,7 @@ const DailyReport = () => {
           <h1 className="text-lg font-semibold">Daily Report</h1>
           <p className="text-sm text-muted-foreground">Home → Dashboard → Manage Report</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">About</span>
-          <span className="text-sm text-muted-foreground">Support</span>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white text-sm font-medium">
-            N
-          </div>
-        </div>
+        <UserNav />
       </header>
       
       <div className="flex-1 space-y-4 p-8 pt-6">

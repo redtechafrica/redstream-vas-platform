@@ -1,5 +1,5 @@
 
-import { Home, Users, FileText, Activity, Settings, Plus, List, Calendar, ChevronDown, Upload, Video, FolderOpen, User } from "lucide-react"
+import { Home, Users, FileText, Activity, Settings, Plus, List, Calendar, ChevronDown, Upload, Video, FolderOpen, User, PenTool, Gift } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import {
   Sidebar,
@@ -121,13 +121,35 @@ const menuItems = [
   },
   {
     title: "Manage Blog",
-    icon: FileText,
-    url: "#",
+    icon: PenTool,
+    items: [
+      {
+        title: "New Post",
+        url: "/blog/new",
+        icon: Plus,
+      },
+      {
+        title: "All Posts",
+        url: "/blog",
+        icon: FileText,
+      },
+    ],
   },
   {
     title: "Draws",
-    icon: Calendar,
-    url: "#",
+    icon: Gift,
+    items: [
+      {
+        title: "New Draw",
+        url: "/draws/new",
+        icon: Plus,
+      },
+      {
+        title: "Manage Draws",
+        url: "/draws",
+        icon: Calendar,
+      },
+    ],
   },
 ]
 
@@ -146,7 +168,7 @@ export function AppSidebar() {
           <img 
             src={logoUrl} 
             alt="REDSTREAM" 
-            className="h-12 w-auto"
+            className="h-16 w-auto"
           />
         </div>
       </SidebarHeader>
@@ -211,7 +233,7 @@ export function AppSidebar() {
       
       <SidebarFooter className="p-4">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">2022©</span>
+          <span className="text-xs text-muted-foreground">2025©</span>
           <ThemeToggle />
         </div>
       </SidebarFooter>
